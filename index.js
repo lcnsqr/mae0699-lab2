@@ -247,9 +247,11 @@ document.querySelector("button[name='solve']").addEventListener("click", functio
 // Gerar coeficientes a partir dos pontos aleatoriamente distribuídos
 document.querySelector("button[name='coef']").addEventListener("click", function(event){
 	coeficientes();
-	// Recalcular a solução
+	// Calcular a solução
 	solucao();
 });
 
 // Gerar coeficientes e computar solução ao carregar a página
 coeficientes();
+// Calcular a solução
+solucao();
