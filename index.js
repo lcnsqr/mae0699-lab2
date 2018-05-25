@@ -253,4 +253,3 @@ document.querySelector("button[name='coef']").addEventListener("click", function
 
 // Gerar coeficientes e computar solução ao carregar a página
 coeficientes();
-solucao();
