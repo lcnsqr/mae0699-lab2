@@ -125,6 +125,16 @@ var coeficientes = function(){
 	uniformeEspiral();
 	uniformeSolido();
 	uniformeEsfera();
+	document.querySelector("span[data-variable='A']").textContent = A;
+	document.querySelector("span[data-variable='B']").textContent = B;
+	document.querySelector("span[data-variable='C']").textContent = C;
+	document.querySelector("span[data-variable='D']").textContent = D;
+	document.querySelector("span[data-variable='E']").textContent = E;
+	document.querySelector("span[data-variable='F']").textContent = F;
+	document.querySelector("span[data-variable='G']").textContent = G;
+	document.querySelector("span[data-variable='H']").textContent = H;
+	document.querySelector("span[data-ini='y']").textContent = ini_y;
+	document.querySelector("span[data-ini='y_d']").textContent = ini_y_d;
 };
 
 // Parcela M(t) da solução não-homogênea
@@ -148,9 +158,20 @@ var M = function(t){
 
 // Gerar solução para a equação não-homogênea a partir 
 // dos coeficientes e condições iniciais aleatórios.
-// Variável x em [0,1]
-// Parâmetro M é o valor da terceira solução particular (somatória)
-var solucao = function(x, m){
+var solucao = function(){
+	// Variável x em [0,1]
+	var x = document.querySelector("input[name='x']").value;
+	// Varificar se x é válido
+	if (isNaN(x)) x = 0;
+	// Não permitir valores fora do intervalo [0,1]
+	if ( x < 0 ) x = 0;
+	if ( x > 1 ) x = 1;
+	document.getElementById("x-in-sum").textContent = x;
+
+	// Valor da somatória (solução particular iii) para o x escolhido
+	var m = M(x);
+	document.getElementById("sum").textContent = m;
+
 	// Raízes das soluções elementares
 	var r = [0,0];
 	// Valor das soluções elementares
@@ -215,5 +236,19 @@ var solucao = function(x, m){
 	sol_p[2] = C*m;
 
 	// Resultado
-	return c[0]*sol[0] + c[1]*sol[1] + sol_p[0] + sol_p[1] + sol_p[2];
+	document.getElementById("y").textContent = c[0]*sol[0] + c[1]*sol[1] + sol_p[0] + sol_p[1] + sol_p[2];
 }
+
+// Computar solução
+document.querySelector("button[name='solve']").addEventListener("click", function(event){
+	solucao();
+});
+
+// Gerar coeficientes a partir dos pontos aleatoriamente distribuídos
+document.querySelector("button[name='coef']").addEventListener("click", function(event){
+	coeficientes();
+});
+
+// Gerar coeficientes e computar solução ao carregar a página
+coeficientes();
+solucao();
