@@ -44,15 +44,14 @@ var parNormal = function(){
 
 // Pontos uniformemente distribuídos na espiral
 var uniformeEspiral = function(){
-	// Ponto uniformemente distribuído na espiral entre 0 e 2*PI.
-	// Não incluir 2*PI para não gerar raio de tamanho zero
-	var beta = 2*Math.PI - 1e-10;
-	var a = 1 - Math.random();
-	// Ângulo do ponto
-	var alfa = beta + Math.log(a);
-	// Raio do ponto
-	var rho = Math.exp(beta) * a;
-	// Coordenadas cartesianas
+	// Ponto uniformemente distribuído na espiral
+	// Ângulo entre -inf e 0.
+	var alfa = Math.log(1-Math.random());
+	// Raio do ponto para o ângulo alfa
+	var rho = Math.exp(alfa);
+	// Comprimento da espiral até o ângulo alfa
+	var L = Math.sqrt(2)*rho;
+	// Coordenadas cartesianas (não usadas, apenas para referência)
 	var x = rho * Math.cos(alfa);
 	var y = rho * Math.sin(alfa);
 	// Posicao
@@ -62,7 +61,7 @@ var uniformeEspiral = function(){
 	// Coeficiente G
 	G = alfa;
 	// Coeficiente H
-	H = Math.sqrt(2)*(Math.exp(alfa)-1);
+	H = Math.random() * L;
 };
 
 // Pontos uniformemente distribuídos no sólido
