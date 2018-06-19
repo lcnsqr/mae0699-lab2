@@ -133,7 +133,8 @@ var Esfera = function(){
 };
 
 // Gerar coeficientes a partir dos pontos aleatoriamente distribuídos
-var coeficientes = function(){
+// exibir: Exibir valores nos campos das páginas (0 ou 1)
+var coeficientes = function(exibir){
 	Espiral();
 	Funil();
 	Esfera();
@@ -151,16 +152,18 @@ var coeficientes = function(){
 	p = p - 1/Math.pow(2, i+1);
 	H = i + x - p;
 
-	document.querySelector("span[data-variable='A']").textContent = A;
-	document.querySelector("span[data-variable='B']").textContent = B;
-	document.querySelector("span[data-variable='C']").textContent = C;
-	document.querySelector("span[data-variable='D']").textContent = D;
-	document.querySelector("span[data-variable='E']").textContent = E;
-	document.querySelector("span[data-variable='F']").textContent = F;
-	document.querySelector("span[data-variable='G']").textContent = G;
-	document.querySelector("span[data-variable='H']").textContent = H;
-	document.querySelector("span[data-ini='y']").textContent = ini_y;
-	document.querySelector("span[data-ini='y_d']").textContent = ini_y_d;
+	if (exibir == 1){
+		document.querySelector("span[data-variable='A']").textContent = A;
+		document.querySelector("span[data-variable='B']").textContent = B;
+		document.querySelector("span[data-variable='C']").textContent = C;
+		document.querySelector("span[data-variable='D']").textContent = D;
+		document.querySelector("span[data-variable='E']").textContent = E;
+		document.querySelector("span[data-variable='F']").textContent = F;
+		document.querySelector("span[data-variable='G']").textContent = G;
+		document.querySelector("span[data-variable='H']").textContent = H;
+		document.querySelector("span[data-ini='y']").textContent = ini_y;
+		document.querySelector("span[data-ini='y_d']").textContent = ini_y_d;
+	}
 };
 
 // Parcela M(t) da solução não-homogênea
@@ -197,10 +200,7 @@ var M = function(t){
 	return sum;
 }
 
-// Gerar solução para a equação não-homogênea a partir 
-// dos coeficientes e condições iniciais aleatórios.
-var solucao = function(){
-	// Variável x em [0,1]
+var ler_x = function(){
 	var x = document.querySelector("input[name='x']").value;
 	// Verificar se x é válido
 	if (isNaN(x)) x = 0;
@@ -208,10 +208,19 @@ var solucao = function(){
 	if ( x < 0 ) x = 0;
 	if ( x > 1 ) x = 1;
 	document.getElementById("x-in-sum").textContent = x;
+	return x;
+}
 
+// Gerar solução para a equação não-homogênea a partir 
+// dos coeficientes e condições iniciais aleatórios.
+// x: Variável x em [0,1]
+// exibir: Mostrar valores nos campos da página (0 ou 1)
+var solucao = function(x, exibir){
 	// Valor da somatória (solução particular iii) para o x escolhido
 	var m = M(x);
-	document.getElementById("sum").textContent = m;
+	if (exibir == 1){
+		document.getElementById("sum").textContent = m;
+	}
 
 	// Raízes das soluções elementares
 	var r = [0,0];
@@ -280,22 +289,51 @@ var solucao = function(){
 	sol_p[2] = m/C;
 
 	// Resultado
-	document.getElementById("y").textContent = c[0]*sol[0] + c[1]*sol[1] + sol_p[0] + sol_p[1] + sol_p[2];
+	if (exibir == 1){
+		document.getElementById("y").textContent = c[0]*sol[0] + c[1]*sol[1] + sol_p[0] + sol_p[1] + sol_p[2];
+	}
+	return c[0]*sol[0] + c[1]*sol[1] + sol_p[0] + sol_p[1] + sol_p[2];
 }
 
 // Computar solução
 document.querySelector("button[name='solve']").addEventListener("click", function(event){
-	solucao();
+	solucao(ler_x(), 1);
 });
 
 // Gerar coeficientes a partir dos pontos aleatoriamente distribuídos
 document.querySelector("button[name='coef']").addEventListener("click", function(event){
-	coeficientes();
+	coeficientes(1);
 	// Calcular a solução
-	solucao();
+	solucao(ler_x(), 1);
 });
 
 // Gerar coeficientes e computar solução ao carregar a página
-coeficientes();
+coeficientes(1);
 // Calcular a solução
-solucao();
+solucao(ler_x(), 1);
+
+// Calcular esperança e variância para y(1)
+// n: Número de iterações
+var esperanca = function(n){
+	// Soma dos resultados
+	var sum = 0;
+	// Cópia da solução
+	var sol = 0;
+	// Cópia do número de iterações
+	var d = n;
+	for (var i = 0; i < n; i++){
+		// Gerar coeficientes sem exibir na página
+		coeficientes(0);
+		// Calcular o resultado sem exibir na página
+		sol = solucao(1, 0);
+		if ( sol == Number.POSITIVE_INFINITY || sol == Number.NEGATIVE_INFINITY || isNaN(sol) ){
+			// Erro na solução numérica, descartar essa iteração
+			d--;
+			continue;
+		}
+		sum += sol;
+	}
+	// Média para y(1)
+	console.log(d, sum / d);
+
+}
