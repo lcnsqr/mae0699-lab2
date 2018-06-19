@@ -42,61 +42,56 @@ var parNormal = function(){
 	return [p[0]*f,p[1]*f];
 }
 
-// Pontos uniformemente distribuídos na espiral
-var uniformeEspiral = function(){
-	// Ponto uniformemente distribuído na espiral
-	// Ângulo entre -inf e 0.
-	var alfa = Math.log(1-Math.random());
-	// Raio do ponto para o ângulo alfa
+// Ponto uniformemente distribuído na espiral
+var Espiral = function(){
+	// Ponto uniformemente distribuído na espiral até o ângulo beta
+	var beta = 1/Math.pow((1+Math.random()), 3);
+	// Ângulo uniformemente distribuído entre -inf e Beta
+	var alfa = beta + Math.log(1-Math.random());
+	// Distância da origem para para o ângulo alfa
 	var rho = Math.exp(alfa);
-	// Comprimento da espiral até o ângulo alfa
-	var L = Math.sqrt(2)*rho;
-	// Coordenadas cartesianas (não usadas, apenas para referência)
-	var x = rho * Math.cos(alfa);
-	var y = rho * Math.sin(alfa);
-	// Posicao
-	var ponto = [x,y,0];
 	// Coeficiente E
 	E = -rho;
 	// Coeficiente G
 	G = alfa;
-	// Coeficiente H
-	H = Math.random() * L;
 };
 
-// Pontos uniformemente distribuídos no sólido
-var uniformeSolido = function(){
+// Ponto uniformemente distribuído no sólido (funil)
+var Funil = function(){
 	// Ponto dentro do disco na altura z 
 	var z = 0.5*Math.log(1-Math.random())
-	// Raio do disco
-	var ez = Math.exp(z);
-	var x = -ez + 2*Math.random()*ez;
-	var y = -ez + 2*Math.random()*ez;
+	// Maior raio do disco que corta o funil
+	var rz = Math.exp(z);
+	// Gerar coordenadas x,y dentro do disco
+	var x = -rz + 2*Math.random()*rz;
+	var y = -rz + 2*Math.random()*rz;
 	// Gerar novamente caso ponto fora do disco ou sem tamanho
-	while ( Math.pow(x,2) + Math.pow(y,2) > Math.pow(ez,2) || ( x==0 && y==0 ) ){
-		x = -ez + 2*Math.random()*ez;
-		y = -ez + 2*Math.random()*ez;
+	while ( Math.pow(x,2) + Math.pow(y,2) > Math.pow(rz,2) || ( x==0 && y==0 ) ){
+		x = -rz + 2*Math.random()*rz;
+		y = -rz + 2*Math.random()*rz;
 	}
-	// Projetar na circunferência
-	var t = Math.sqrt(Math.pow(x,2)+Math.pow(y,2));
-	x *= ez/t;
-	y *= ez/t;
-	// Posicao
-	var ponto = [x,y,z];
+	var teta = Math.atan2(y, x);
+	if ( teta < 0 ){
+		// Ângulo negativo implica que está entre pi e 2*pi
+		// Corrigir para continuar no sentido anti-horário
+		teta = 2*Math.PI + teta;
+	}
 	// Valor esperado para o raio do disco
-	var esp = 0.5;
+	var ER_v = 0.5;
+	// Distância do ponto ao eixo z
+	var R_v = (Math.pow(x, 2) + Math.pow(y, 2));
 	// Coeficiente C
-	C = 1 + ez - esp;
+	C = 1 + R_v - ER_v;
 	// Coeficiente D
-	D = Math.atan2(ponto[1], ponto[0]);
+	D = teta;
 	// Coeficiente F
 	F = z;
 	// Condição inicial y(0)
-	ini_y = (Math.atan2(ponto[1], ponto[0]) - Math.PI)/Math.PI;
+	ini_y = (teta - Math.PI)/Math.PI;
 };
 
-// Pontos uniformemente distribuídos na superfície da esfera
-var uniformeEsfera = function(){
+// Ponto uniformemente distribuído na superfície da esfera
+var Esfera = function(){
 	// Raio da esfera
 	var rho = 1;
 	// Armazenar par normal gerado pelo método Box-Muller
@@ -104,26 +99,53 @@ var uniformeEsfera = function(){
 	// Posicao
 	var ponto = [0,0,0];
 	par = parNormal();
+	// x
 	ponto[0] = par[0];
+	// y
 	ponto[1] = par[1];
 	par = parNormal();
+	// z
 	ponto[2] = par[0];
 	// Projetar na superfície da esfera
 	var t = Op.norm(ponto);
 	ponto = Op.scale(rho/t, ponto);
+	// Ângulo teta: 0 < teta < 2*pi
+	var teta = Math.atan2(ponto[1], ponto[0]);
+	if ( teta < 0 ){
+		// Ângulo negativo implica que está entre pi e 2*pi
+		// Corrigir para continuar no sentido anti-horário
+		teta = 2*Math.PI + teta;
+	}
+	// Ângulo phi: -pi/2 < phi < pi/2
+	// Função Math.acos retorna valor [0,pi], necessário rotacionar
+	var phi = Math.acos(ponto[2]) - Math.PI/2;
 	// Coeficiente A
-	A = 1 + 2*Math.acos(ponto[2]) - Math.PI;
+	A = 1 + teta - Math.PI;
 	// Coeficiente B
-	B = Math.atan(ponto[1]/ponto[0]) + 1;
+	B = 1 + phi;
 	// Condição inicial y´(0)
-	ini_y_d = (2*Math.acos(ponto[2]) - Math.PI)/Math.PI;
+	ini_y_d = (teta - Math.PI)/Math.PI;
 };
 
 // Gerar coeficientes a partir dos pontos aleatoriamente distribuídos
 var coeficientes = function(){
-	uniformeEspiral();
-	uniformeSolido();
-	uniformeEsfera();
+	Espiral();
+	Funil();
+	Esfera();
+	// Coeficiente H
+	// "Grudar" todos os intervalos de C (a união) e identifica-los com sub-intervalos de (0, 1).
+	var x = Math.random();
+	var p = 1/2;
+	var i = 0;
+	// Iterar até identificar o intervalo de C
+	while ( p < x ){
+		i++;
+		p += 1/Math.pow(2, i+1);
+	}
+	// Mapear H de acordo com o intervalo onde x caiu
+	p = p - 1/Math.pow(2, i+1);
+	H = i + x - p;
+
 	document.querySelector("span[data-variable='A']").textContent = A;
 	document.querySelector("span[data-variable='B']").textContent = B;
 	document.querySelector("span[data-variable='C']").textContent = C;
@@ -140,16 +162,31 @@ var coeficientes = function(){
 var M = function(t){
 	// Parâmetro do processo de Poisson
 	var lambda_p = geom(1/5);
-	// Número de ocorrências do processo de Poisson no intervalo t
-	N = poiss(t*lambda_p);
-	// Poisson da variável x
-	var lambda_e = poiss(.5);
+	// Gerar lambda_p uniformes em (0,1)
+	var S = [];
+	for (var s = 0; s < lambda_p; s++){
+		S.push(Math.random());
+	}
+	// Ordenar eventos
+	S.sort();
+	// Contar quantos eventos do processo de poisson ocorreram até t
+	var c = 0;
+	for (var s = 0; s < lambda_p; s++){
+		if ( S[s] < t ){
+			// Somar evento
+			c++;
+		}
+		else {
+			// Instante do evento ultrapassou t
+			break;
+		}
+	}
 	// Somatória
 	var sum = 0;
-	for (var i = 0; i < N; i++){
+	for (var i = 0; i < c; i++){
 		// Variável z = 1 com probabilidade 1/2 e 0 com prob. 1/2
 		var z = ( Math.random() < .5 ) ? 1 : 0;
-		var x = Math.exp(1+lambda_e*(1+t));
+		var x = Math.exp(1+poiss(.5)*(1+t));
 		sum += Math.pow(-1, z)*x;
 	}
 	return sum;
@@ -160,7 +197,7 @@ var M = function(t){
 var solucao = function(){
 	// Variável x em [0,1]
 	var x = document.querySelector("input[name='x']").value;
-	// Varificar se x é válido
+	// Verificar se x é válido
 	if (isNaN(x)) x = 0;
 	// Não permitir valores fora do intervalo [0,1]
 	if ( x < 0 ) x = 0;
@@ -228,11 +265,14 @@ var solucao = function(){
 	// Primeira solução particular (exponencial)
 	sol_p[0] = (D/(A*Math.pow(E, 2)+2*B*E+C))*Math.exp(E*x);
 
-	// Segunda solução particular (cosseno)
-	sol_p[1] = (F/(-A*Math.pow(G, 2)+2*B*G+C))*Math.cos(G*x + H);
+	// Segunda solução particular (seno e cosseno)
+	// Cosseno
+	sol_p[1] = ((F*(C-A*Math.pow(G,2)))/(Math.pow(C-A*Math.pow(G,2),2)+Math.pow(2*B*G,2)))*Math.cos(G*x+H);
+	// Seno
+	sol_p[1] += ((2*B*G*F)/(Math.pow(C-A*Math.pow(G,2),2)+Math.pow(2*B*G,2)))*Math.sin(G*x+H);
 
 	// Terceira solução particular (somatória)
-	sol_p[2] = C*m;
+	sol_p[2] = m/C;
 
 	// Resultado
 	document.getElementById("y").textContent = c[0]*sol[0] + c[1]*sol[1] + sol_p[0] + sol_p[1] + sol_p[2];
