@@ -23,6 +23,11 @@ var poiss = function(lambda){
 	return k - 1;
 }
 
+// Variável aleatória exponencial
+var expo = function(lambda){
+	return Math.log(1-Math.random())/(−lambda);
+}
+
 // Um par de variáveis aleatórias com distribuição normal,
 // esperança zero e variância unitária (método Box-Muller)
 var parNormal = function(){
@@ -186,7 +191,7 @@ var M = function(t){
 	for (var i = 0; i < c; i++){
 		// Variável z = 1 com probabilidade 1/2 e 0 com prob. 1/2
 		var z = ( Math.random() < .5 ) ? 1 : 0;
-		var x = Math.exp(1+poiss(.5)*(1+t));
+		var x = expo(1+poiss(.5)*(1+t));
 		sum += Math.pow(-1, z)*x;
 	}
 	return sum;
