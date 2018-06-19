@@ -25,7 +25,7 @@ var poiss = function(lambda){
 
 // Variável aleatória exponencial
 var expon = function(lambda){
-	return Math.log(1-Math.random())/(−lambda);
+	return Math.log(1-Math.random())/(-lambda);
 }
 
 // Um par de variáveis aleatórias com distribuição normal,
