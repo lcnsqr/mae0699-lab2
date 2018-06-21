@@ -4,6 +4,28 @@ var A, B, C, D, E, F, G, H;
 // Valores iniciais da equação diferencial
 var ini_y , ini_y_d;
 
+// Funções vetoriais
+// Multiplicar por escalar
+var scale = function(scalar, vector){
+	var v = [];
+	for ( var i = 0; i < vector.length; i++ ){
+		v.push(scalar * vector[i]);
+	}
+	return v;
+};
+// Produto interno
+var innerProduct = function(v1, v2){
+	var p = 0;
+	for ( var i = 0; i < v1.length; i++ ){
+		p += v1[i] * v2[i];
+	}
+	return p;
+};
+// Tamanho do vetor
+var norm = function(vector){
+	return Math.sqrt(innerProduct(vector, vector));
+};
+
 // Variável aleatória geométrica (Número de falhas até o primeiro sucesso)
 var geom = function(lambda){
 	return Math.floor(Math.log(1-Math.random())/Math.log(1-lambda));
@@ -47,18 +69,33 @@ var parNormal = function(){
 	return [p[0]*f,p[1]*f];
 }
 
+// Densidade de probabilidade f_beta (para a espiral)
+// x: Valor no intervalo [0, 10]
+var f_beta = function(x){
+	var c = 3.60566;
+	return c/(Math.exp(2*x)*Math.pow((1+x), 2));
+}
+
 // Ponto uniformemente distribuído na espiral
 var Espiral = function(){
-	// Ponto uniformemente distribuído na espiral até o ângulo beta
-	var beta = 1/Math.pow((1+Math.random()), 3);
-	// Ângulo uniformemente distribuído entre -inf e Beta
-	var alfa = beta + Math.log(1-Math.random());
+	// Gerar variável aleatória com densidade 
+	// f_beta pelo método aceitação/rejeição
+	var x, y;
+	x = 10*Math.random();
+	y = 4*Math.random();
+	while ( f_beta(x) < y ){
+		x = 10*Math.random();
+		y = 4*Math.random();
+	}
+	var beta = x;
+	// Ângulo uniformemente distribuído entre -2*pi e Beta
+	var teta = Math.log((Math.exp(beta)-Math.exp(-2*Math.PI))*Math.random() + Math.exp(-2*Math.PI));
 	// Distância da origem para para o ângulo alfa
-	var rho = Math.exp(alfa);
+	var rho = Math.exp(teta);
 	// Coeficiente E
 	E = -rho;
 	// Coeficiente G
-	G = alfa;
+	G = teta;
 };
 
 // Ponto uniformemente distribuído no sólido (funil)
@@ -114,8 +151,8 @@ var Esfera = function(){
 	// z
 	ponto[2] = par[0];
 	// Projetar na superfície da esfera
-	var t = Op.norm(ponto);
-	ponto = Op.scale(rho/t, ponto);
+	var t = norm(ponto);
+	ponto = scale(rho/t, ponto);
 	// Ângulo teta: 0 < teta < 2*pi
 	var teta = Math.atan2(ponto[1], ponto[0]);
 	if ( teta < 0 ){
