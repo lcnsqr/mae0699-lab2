@@ -82,9 +82,11 @@ var Funil = function(){
 		teta = 2*Math.PI + teta;
 	}
 	// Valor esperado para o raio do disco
-	var ER_v = 0.5;
+	// calculado numericamente pela média em
+	// 1.000.000.000 de amostras
+	var ER_v = 4/9;
 	// Distância do ponto ao eixo z
-	var R_v = (Math.pow(x, 2) + Math.pow(y, 2));
+	var R_v = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 	// Coeficiente C
 	C = 1 + R_v - ER_v;
 	// Coeficiente D
