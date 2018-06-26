@@ -351,7 +351,13 @@ coeficientes(1);
 // Calcular a solução
 solucao(ler_x(), 1);
 
-// Calcular esperança e variância para y(1)
+
+/*
+ * Funções para estimar esperança e variância de y(1)
+ * são invocadas maualmente a partir do console
+ */
+
+// Calcular esperança para y(1)
 // n: Número de iterações
 var esperanca = function(n){
 	// Soma dos resultados
@@ -371,6 +377,34 @@ var esperanca = function(n){
 			continue;
 		}
 		sum += sol;
+	}
+	// Média para y(1)
+	console.log(d, sum / d);
+
+}
+
+// Calcular variância para y(1)
+// e: esperança
+// n: Número de iterações
+var variancia = function(e, n){
+	// Soma dos resultados
+	var sum = 0;
+	// Cópia da solução
+	var sol = 0;
+	// Cópia do número de iterações
+	var d = n;
+	for (var i = 0; i < n; i++){
+		// Gerar coeficientes sem exibir na página
+		coeficientes(0);
+		// Calcular o resultado sem exibir na página
+		sol = solucao(1, 0);
+		if ( sol == Number.POSITIVE_INFINITY || sol == Number.NEGATIVE_INFINITY || isNaN(sol) ){
+			// Erro na solução numérica, descartar essa iteração
+			d--;
+			continue;
+		}
+		// Variância
+		sum += Math.pow(sol - e, 2);
 	}
 	// Média para y(1)
 	console.log(d, sum / d);
